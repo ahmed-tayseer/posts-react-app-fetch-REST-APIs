@@ -10,6 +10,8 @@ import Loader from "../../components/Loader/Loader";
 import ErrorHandler from "../../components/ErrorHandler/ErrorHandler";
 import "./Feed.css";
 
+const apiUrl = process.env.REACT_APP_API_URL;
+
 class Feed extends Component {
   state = {
     isEditing: false,
@@ -23,7 +25,7 @@ class Feed extends Component {
   };
 
   componentDidMount() {
-    fetch("http://localhost:8080/auth/status", {
+    fetch(apiUrl + "/auth/status", {
       headers: {
         Authorization: "Bearer " + this.props.token,
       },
@@ -39,13 +41,10 @@ class Feed extends Component {
       })
       .catch(this.catchError);
 
-    console.log("in load posts");
-
     this.loadPosts();
 
     // establish connection from the client which trigger 'connection channel
-    // openSocket("http://localhost:8080");
-    const socket = openSocket("http://localhost:8080");
+    const socket = openSocket(apiUrl);
     // to listen to the channels
     socket.on("posts", (data) => {
       if (data.action === "create") {
@@ -101,7 +100,7 @@ class Feed extends Component {
       page--;
       this.setState({ postPage: page });
     }
-    fetch("http://localhost:8080/feed/posts?page=" + page, {
+    fetch(apiUrl + "/feed/posts?page=" + page, {
       headers: {
         Authorization: "Bearer " + this.props.token,
       },
@@ -124,7 +123,7 @@ class Feed extends Component {
 
   statusUpdateHandler = (event) => {
     event.preventDefault();
-    fetch("http://localhost:8080/status", {
+    fetch(apiUrl + "/auth/status", {
       method: "PATCH",
       headers: {
         Authorization: "Bearer " + this.props.token,
@@ -172,10 +171,10 @@ class Feed extends Component {
     formData.append("title", postData.title);
     formData.append("content", postData.content);
     formData.append("image", postData.image); // image is a file object
-    let url = "http://localhost:8080/feed/post";
+    let url = apiUrl + "/feed/post";
     let method = "POST";
     if (this.state.editPost) {
-      url = "http://localhost:8080/feed/post/" + this.state.editPost._id;
+      url = apiUrl + "/feed/post/" + this.state.editPost._id;
       method = "PUT";
     }
 
@@ -227,7 +226,7 @@ class Feed extends Component {
 
   deletePostHandler = (postId) => {
     this.setState({ postsLoading: true });
-    fetch(`http://localhost:8080/feed/${postId}`, {
+    fetch(apiUrl + `/feed/${postId}`, {
       method: "DELETE",
       headers: {
         Authorization: "Bearer " + this.props.token,
